@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
-import { BusinessSection } from "@/features/screens/demo-pages";
+import { BusinessDashboard, BusinessSection } from "@/features/screens/business";
 
 const SECTIONS: Record<string, string> = {
+  dashboard: "Resumen del negocio",
+  customers: "Clientes",
   payments: "Pagos",
   attendance: "Asistencia",
   memberships: "Membresías",
@@ -19,5 +21,10 @@ export default async function Page({ params }: { params: Promise<{ section: stri
   const { section } = await params;
   const title = SECTIONS[section];
   if (!title) notFound();
+  if (section === "dashboard") return <BusinessDashboardRoute />;
   return <BusinessSection section={section} />;
+}
+
+function BusinessDashboardRoute() {
+  return <BusinessDashboard />;
 }

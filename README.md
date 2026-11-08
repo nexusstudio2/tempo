@@ -1,6 +1,6 @@
 # Tempo
 
-Plataforma SaaS de gestión para negocios con clientes recurrentes. Producto de **Libiter**.
+Plataforma SaaS de gestión para negocios con clientes recurrentes. Producto de **Koaliado**.
 Referencia funcional: *Especificación técnica y funcional V2.1*.
 
 ## Estructura
@@ -22,9 +22,11 @@ Referencia funcional: *Especificación técnica y funcional V2.1*.
 - Cero acceso cruzado entre tenants: todo registro empresarial lleva `tenant_id`.
 - Ningún token de sesión en `localStorage`.
 - Cada módulo del backend tiene sus capas `domain / application / infrastructure / presentation` y no accede a las tablas de otro módulo.
-- Los cobros de Libiter (`saas-billing`) y los de los establecimientos (`payments`) nunca se mezclan.
+- Los cobros de Koaliado (`saas-billing`) y los de los establecimientos (`payments`) nunca se mezclan.
 
 ## Estado
 
-Etapa 0 (Fundamentos). Este repositorio solo contiene la estructura: **no se fijaron versiones**
-de dependencias; se eligen verificando compatibilidad y soporte (especificación, sección 4.2).
+Etapa 1 en curso. La API ya tiene un proyecto Spring Boot ejecutable, configuración para MySQL/Flyway,
+Actuator, trazabilidad por correlación y un esquema inicial para identidad, establecimientos, sucursales,
+membresías y auditoría. Los casos de uso y endpoints de negocio siguen pendientes; consulta
+`services/api/README.md` para preparar el entorno local.

@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Tempo API
   version: 1.0.0-draft.1
-  description: 'Contrato de la API REST de Tempo (Libiter). Primera tanda: autenticación y contextos, establecimientos
+  description: 'Contrato de la API REST de Tempo (Koaliado). Primera tanda: autenticación y contextos, establecimientos
     y sucursales, clientes y administración de establecimientos.
 
 

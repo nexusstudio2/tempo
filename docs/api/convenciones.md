@@ -22,7 +22,7 @@ Contrato: `contracts/openapi/tempo-api.v1.yaml` (fuente de verdad). Estado: borr
 3. **Inicio de sesión fuera de la API.** Lo hace Cognito (Authorization Code + PKCE) detrás de un BFF; la API solo expone `/auth/me`, `/auth/sessions` y `/auth/logout`.
 4. **Métodos de asistencia** incluyen `FINGERPRINT`, `FACE` y `CARD` además de `QR` y `MANUAL`. Es una ampliación respecto a la spec V2.1 (solo QR): requiere revisión de alcance y de privacidad.
 5. **Esqueletos.** Membresías, pagos y asistencias del cliente son de solo lectura y mínimos; se completan en las Etapas 3 y 5.
-6. **Nombre de la cookie** (`tempo_session`) es provisional.
+6. **Cookie de sesión del BFF.** En local usa `tempo_session`; en producción `__Host-tempo_session`, cifrada y `HttpOnly`.
 
 ## Pendiente
 

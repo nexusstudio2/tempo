@@ -16,6 +16,8 @@ npm install next@16.4 react@19 react-dom@19 zod @tanstack/react-query react-hook
 npm install -D typescript@5 @types/node @types/react @types/react-dom tailwindcss@4 @tailwindcss/postcss@4 eslint eslint-config-next prettier vitest jsdom @testing-library/react @testing-library/jest-dom @playwright/test
 npx playwright install chromium
 Copy-Item .env.example .env.local
+$mockKey = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+Add-Content .env.local "MOCK_SESSION_SECRET=$mockKey"
 npm run dev
 ```
 
@@ -33,8 +35,12 @@ npm run dev
 Cada terminal nueva abre en la raíz del proyecto: repite el `cd` hacia `apps/web`.
 Evita guardar el proyecto dentro de OneDrive (`node_modules` tiene miles de archivos).
 
-Abre http://localhost:3000. Con `NEXT_PUBLIC_USE_MOCKS=true` el login acepta cualquier correo
-válido y contraseña, y ofrece cinco contextos de ejemplo.
+Abre http://localhost:3000. Con `NEXT_PUBLIC_USE_MOCKS=true`, el login demo solo acepta las
+cuentas locales documentadas en `lib/server/mock-auth.ts` y ofrece únicamente los espacios
+asignados a esa cuenta. `carlos@correo.com` / `cualquiera` puede elegir entre los cinco espacios;
+las cuentas `@tempo.test` tienen un único rol y usan la contraseña `TempoDemo2026!`:
+`superadmin@tempo.test`, `propietario@tempo.test`, `recepcion@tempo.test`,
+`instructor@tempo.test` y `cliente@tempo.test`.
 
 ## Comprobaciones
 
@@ -47,7 +53,7 @@ Estado: `typecheck`, `lint`, `test` y `test:e2e` pasan.
 ## Qué hay
 
 - `app/` rutas por grupo: `(auth)`, `(superadmin)`, `(business)`, `(staff)`, `(customer)`.
-  Las pantallas de destino son marcadores; el diseño está en `docs/design/prototypes/`.
+  Las pantallas están implementadas como componentes React y TypeScript separados por rol en `features/screens/` (`business`, `superadmin`, `reception`, `instructor`, `customer`) con piezas compartidas en `common.tsx`.
 - `components/ui` piezas base con las medidas del prototipo (botón 52 px, radio 14 px).
 - `features/contexts` roles, contextos y a qué ruta lleva cada rol.
 - `lib/api-client.ts` llamadas a `/api/v1` con validación Zod, Correlation ID e idempotencia.
@@ -56,10 +62,31 @@ Estado: `typecheck`, `lint`, `test` y `test:e2e` pasan.
 
 ## Pendiente para el modo real
 
-- El inicio de sesión real es Cognito con Authorization Code + PKCE detrás de un BFF
-  (`app/api/auth/*`, sin crear todavía). El navegador solo recibe cookies HttpOnly.
-- MFA obligatorio para `SUPER_ADMIN` (el prototipo lo muestra en el login).
+- El BFF ya implementa Cognito Authorization Code + PKCE (`app/api/auth/*`), guarda tokens en una cookie cifrada `HttpOnly`
+  y agrega el access token como Bearer al reenviar `/api/v1/*` a Spring. El navegador nunca recibe tokens.
+- Para habilitarlo falta crear el User Pool/App Client de Koaliado, permitir authorization-code + PKCE y configurar en
+  `.env.local` los valores de Cognito y una clave `SESSION_ENCRYPTION_KEY` aleatoria. Los callback/sign-out URLs locales
+  son `http://localhost:3000/api/auth/callback` y `http://localhost:3000/login`; en producción solo HTTPS.
+- App Client: usar Authorization Code grant, PKCE S256, refresh tokens y scopes `openid`, `email`, `profile`; registrar
+  callback y sign-out URLs exactamente como arriba, y usar un client secret porque el intercambio ocurre en el servidor.
+  Nunca habilitar implicit grant ni publicar el secret con prefijo `NEXT_PUBLIC_`.
+- `apps/web/.env.local`: dominio HTTPS del User Pool, App Client ID/secret y `SESSION_ENCRYPTION_KEY`. En el `.env` raíz:
+  el mismo App Client ID y `COGNITO_ISSUER_URI=https://cognito-idp.<region>.amazonaws.com/<user-pool-id>` para Spring.
+- Sin Cognito, `NEXT_PUBLIC_USE_MOCKS=true` conserva el modo de demostración; para probar Cognito debe ponerse en `false`.
+- El proxy ya entrega Bearer a la API, pero el flujo completo espera que Spring implemente `/contexts`, `/contexts/active`
+  y `/contexts/switch` y que haya usuarios/membresías provisionados. Todavía no se pueden probar pantallas con datos reales.
+- MFA obligatorio para `SUPER_ADMIN` se integra al terminar el flujo de autenticación del BFF.
+- En modo demo, el servidor firma una cookie local HttpOnly, valida cada credencial y limita el cambio de contexto
+  a los roles asignados. Los layouts de server guard bloquean rutas fuera del rol activo.
 - El formato de errores de la API se define en `docs/api`; el cliente asume `{ code, message }`.
+
+Para generar una clave de desarrollo en PowerShell:
+
+```powershell
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+Pega el resultado en `SESSION_ENCRYPTION_KEY` dentro de `apps/web/.env.local`. No lo guardes en Git ni uses esta clave en producción.
 
 ## Tipos desde el contrato de la API
 

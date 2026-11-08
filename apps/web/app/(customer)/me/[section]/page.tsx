@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { CustomerPage } from "@/features/screens/demo-pages";
+import { CustomerPage } from "@/features/screens/customer";
 
 const SECTIONS = ["reservations", "qr", "payments", "profile"];
 

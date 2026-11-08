@@ -1,8 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { routeForRole } from "@/features/contexts/routes";
 import { roleLabels, type TempoContext } from "@/features/contexts/types";
@@ -13,20 +12,28 @@ function initials(name: string) {
 }
 
 export default function SelectContextPage() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const autoSelecting = useRef(false);
   const { data, isLoading, isError } = useQuery({ queryKey: ["contexts"], queryFn: getContexts });
 
-  async function choose(ctx: TempoContext) {
+  const choose = useCallback(async (ctx: TempoContext) => {
     setError(null);
     try {
       // El backend valida la pertenencia; la interfaz solo navega después.
       const active = await switchContext(ctx.id);
-      router.push(routeForRole(active.role));
+      window.location.replace(routeForRole(active.role));
     } catch {
+      autoSelecting.current = false;
       setError("No pudimos abrir ese espacio. Inténtalo de nuevo.");
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    if (data?.length === 1 && !autoSelecting.current) {
+      autoSelecting.current = true;
+      void choose(data[0]);
+    }
+  }, [data, choose]);
 
   return (
     <AuthShell>
