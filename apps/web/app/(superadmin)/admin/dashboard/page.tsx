@@ -1,5 +1,5 @@
-import { PlaceholderScreen } from "@/components/layout/placeholder-screen";
+import { AdminPage } from "@/features/screens/demo-pages";
 
 export default function Page() {
-  return <PlaceholderScreen title="Resumen global" prototype="tempo-superadmin.html" />;
+  return <AdminPage />;
 }

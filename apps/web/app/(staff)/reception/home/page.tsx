@@ -1,5 +1,5 @@
-import { PlaceholderScreen } from "@/components/layout/placeholder-screen";
+import { ReceptionPage } from "@/features/screens/demo-pages";
 
 export default function Page() {
-  return <PlaceholderScreen title="Recepción" prototype="tempo-recepcion.html" />;
+  return <ReceptionPage />;
 }
