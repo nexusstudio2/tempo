@@ -1,14 +1,5 @@
 # Diseño
 
-`prototypes/` tiene las seis vistas del primer prototipo (HTML navegable):
+Las pantallas de Tempo se implementan en Next.js App Router con React y TypeScript. Las rutas viven en `apps/web/app/`; los flujos de rol reutilizables se encuentran en `apps/web/features/screens/`.
 
-| Archivo | Vista | Grupo de rutas |
-|---|---|---|
-| `tempo-login.html` | Login, MFA, invitación y selector de contextos | `(auth)` |
-| `tempo-superadmin.html` | Superadministrador | `(superadmin)` |
-| `tempo-negocio.html` | Propietario / administrador | `(business)` |
-| `tempo-recepcion.html` | Recepción | `(staff)/reception` |
-| `tempo-instructor.html` | Instructor | `(staff)/instructor` |
-| `tempo-cliente.html` | Cliente | `(customer)` |
-
-Marca: violeta `#6A4DFF` (claro) y `#7357FF` (oscuro), tipografías Outfit e Inter.
+La identidad de marca usa violeta `#6A4DFF` en tema claro y `#7357FF` en oscuro, con las tipografías Outfit e Inter.

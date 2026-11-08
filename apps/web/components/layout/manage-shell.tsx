@@ -39,7 +39,7 @@ export function ManageShell({ children }: { children: React.ReactNode }) {
   const { data: ctx } = useActiveContext();
   const { data: branches } = useQuery({ queryKey: ["branches"], queryFn: listBranches });
 
-  const moreActive = !MAIN.some((m) => pathname.startsWith(m.href));
+  const moreActive = !MAIN.some((item) => pathname === item.href);
   const items: NavItem[] = [...MAIN, { label: "Más", icon: "≡", onClick: () => setMore(true), active: moreActive }];
 
   return (

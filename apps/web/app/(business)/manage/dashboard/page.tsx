@@ -1,4 +1,4 @@
-import { BusinessDashboard } from "@/features/screens/demo-pages";
+import { BusinessDashboard } from "@/features/screens/business";
 
 export default function Page() {
   return <BusinessDashboard />;
