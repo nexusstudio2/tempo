@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { PlaceholderScreen } from "@/components/layout/placeholder-screen";
+import { BusinessSection } from "@/features/screens/demo-pages";
 
 const SECTIONS: Record<string, string> = {
   payments: "Pagos",
@@ -19,5 +19,5 @@ export default async function Page({ params }: { params: Promise<{ section: stri
   const { section } = await params;
   const title = SECTIONS[section];
   if (!title) notFound();
-  return <PlaceholderScreen embedded title={title} prototype="tempo-negocio.html" />;
+  return <BusinessSection section={section} />;
 }

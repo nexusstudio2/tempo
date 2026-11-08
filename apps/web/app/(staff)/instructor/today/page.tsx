@@ -1,5 +1,5 @@
-import { PlaceholderScreen } from "@/components/layout/placeholder-screen";
+import { InstructorPage } from "@/features/screens/demo-pages";
 
 export default function Page() {
-  return <PlaceholderScreen title="Hoy" prototype="tempo-instructor.html" />;
+  return <InstructorPage />;
 }
