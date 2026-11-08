@@ -1,0 +1,1441 @@
+openapi: 3.0.3
+info:
+  title: Tempo API
+  version: 1.0.0-draft.1
+  description: 'Contrato de la API REST de Tempo (Libiter). Primera tanda: autenticación y contextos, establecimientos
+    y sucursales, clientes y administración de establecimientos.
+
+
+    **Reglas generales**
+
+    - El tenant nunca viaja en la ruta ni en el cuerpo: sale del contexto activo (spec 7.2). Un recurso de otro
+    tenant responde 404.
+
+    - Listas con paginación por cursor (`limit`, `cursor`) y orden con `sort` (`-createdAt` = descendente).
+
+    - Dinero en unidades menores con moneda ISO 4217. Fechas en UTC (ISO 8601). Identificadores UUID.
+
+    - Toda respuesta incluye `X-Correlation-Id`; el cliente puede enviarlo. Los errores usan siempre el esquema
+    `Error`.
+
+    - Operaciones críticas aceptan `Idempotency-Key`.
+
+    - `x-required-permission` indica el permiso que exige cada operación. Los nombres que no aparecen en la especificación
+    son propuestas.'
+servers:
+- url: /api/v1
+security:
+- cookieAuth: []
+tags:
+- name: Autenticación y contextos
+- name: Establecimientos
+- name: Clientes
+- name: Administración global
+paths:
+  /auth/me:
+    get:
+      tags:
+      - Autenticación y contextos
+      operationId: getMe
+      summary: Perfil de la persona autenticada
+      responses:
+        '200':
+          description: Perfil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /auth/sessions:
+    get:
+      tags:
+      - Autenticación y contextos
+      operationId: listSessions
+      summary: Sesiones abiertas de la persona
+      responses:
+        '200':
+          description: Sesiones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /auth/sessions/{sessionId}:
+    delete:
+      tags:
+      - Autenticación y contextos
+      operationId: revokeSession
+      summary: Revocar una sesión
+      parameters:
+      - name: sessionId
+        in: path
+        required: true
+        description: Sesión a revocar
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Sesión revocada
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /auth/logout:
+    post:
+      tags:
+      - Autenticación y contextos
+      operationId: logout
+      summary: Cerrar la sesión actual
+      description: 'El inicio de sesión no vive en esta API: lo gestiona Cognito (Authorization Code + PKCE) detrás
+        de un BFF que entrega cookies HttpOnly.'
+      responses:
+        '204':
+          description: Sesión cerrada
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /contexts:
+    get:
+      tags:
+      - Autenticación y contextos
+      operationId: listContexts
+      summary: Contextos autorizados
+      responses:
+        '200':
+          description: Contextos (establecimiento y rol) a los que pertenece la persona
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Context'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /contexts/active:
+    get:
+      tags:
+      - Autenticación y contextos
+      operationId: getActiveContext
+      summary: Contexto activo
+      description: 404 si la persona aún no eligió contexto.
+      responses:
+        '200':
+          description: Contexto activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Context'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /contexts/switch:
+    post:
+      tags:
+      - Autenticación y contextos
+      operationId: switchContext
+      summary: Cambiar de contexto
+      description: El backend valida la pertenencia y fija el contexto activo. No cierra la sesión. Todas las operaciones
+        posteriores validan permisos en el servidor (spec 5.3).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchContextRequest'
+      responses:
+        '200':
+          description: Contexto activo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Context'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /tenants/current:
+    get:
+      tags:
+      - Establecimientos
+      operationId: getCurrentTenant
+      summary: Establecimiento del contexto activo
+      responses:
+        '200':
+          description: Establecimiento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    patch:
+      tags:
+      - Establecimientos
+      operationId: updateCurrentTenant
+      summary: Editar el establecimiento activo
+      x-required-permission: settings.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantUpdate'
+      responses:
+        '200':
+          description: Establecimiento actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /branches:
+    get:
+      tags:
+      - Establecimientos
+      operationId: listBranches
+      summary: Sucursales del establecimiento
+      description: Si el rol está limitado por sucursal, solo devuelve las autorizadas.
+      parameters:
+      - &id001
+        $ref: '#/components/parameters/Limit'
+      - &id002
+        $ref: '#/components/parameters/Cursor'
+      - &id003
+        $ref: '#/components/parameters/Sort'
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/BranchStatus'
+      responses:
+        '200':
+          description: Sucursales
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    post:
+      tags:
+      - Establecimientos
+      operationId: createBranch
+      summary: Crear sucursal
+      description: 409 si se excede el límite de sucursales del plan.
+      x-required-permission: branches.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchCreate'
+      responses:
+        '201':
+          description: Sucursal creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /branches/{branchId}:
+    get:
+      tags:
+      - Establecimientos
+      operationId: getBranch
+      summary: Consultar sucursal
+      parameters:
+      - name: branchId
+        in: path
+        required: true
+        description: Sucursal
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Sucursal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    patch:
+      tags:
+      - Establecimientos
+      operationId: updateBranch
+      summary: Editar sucursal
+      x-required-permission: branches.manage
+      parameters:
+      - name: branchId
+        in: path
+        required: true
+        description: Sucursal
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchUpdate'
+      responses:
+        '200':
+          description: Sucursal actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /tenant-settings:
+    get:
+      tags:
+      - Establecimientos
+      operationId: getTenantSettings
+      summary: Reglas configurables del establecimiento
+      responses:
+        '200':
+          description: Ajustes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantSettings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    patch:
+      tags:
+      - Establecimientos
+      operationId: updateTenantSettings
+      summary: Editar reglas del establecimiento
+      description: Los cambios quedan en auditoría.
+      x-required-permission: settings.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantSettingsUpdate'
+      responses:
+        '200':
+          description: Ajustes actualizados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantSettings'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /customers:
+    get:
+      tags:
+      - Clientes
+      operationId: listCustomers
+      summary: Listar clientes
+      x-required-permission: customers.read
+      parameters:
+      - *id001
+      - *id002
+      - *id003
+      - name: q
+        in: query
+        description: Búsqueda por nombre, correo o teléfono
+        schema:
+          type: string
+          maxLength: 100
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/CustomerStatus'
+      - name: membershipStatus
+        in: query
+        schema:
+          $ref: '#/components/schemas/MembershipStatus'
+      - name: branchId
+        in: query
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Clientes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    post:
+      tags:
+      - Clientes
+      operationId: createCustomer
+      summary: Registrar cliente
+      description: Con `sendInvitation` en true se envía una invitación con expiración para entrar al portal. No
+        existe registro abierto (spec 8.2). 409 si el correo ya está registrado en este establecimiento o se excede
+        el límite de clientes del plan.
+      x-required-permission: customers.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerCreate'
+      responses:
+        '201':
+          description: Cliente registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /customers/{customerId}:
+    get:
+      tags:
+      - Clientes
+      operationId: getCustomer
+      summary: Consultar cliente
+      x-required-permission: customers.read
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Cliente
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    patch:
+      tags:
+      - Clientes
+      operationId: updateCustomer
+      summary: Editar cliente
+      x-required-permission: customers.update
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Cliente
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpdate'
+      responses:
+        '200':
+          description: Cliente actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      tags:
+      - Clientes
+      operationId: deactivateCustomer
+      summary: Dar de baja al cliente (baja lógica)
+      x-required-permission: customers.delete
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Cliente
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Cliente dado de baja. El historial se conserva.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /customers/{customerId}/memberships:
+    get:
+      tags:
+      - Clientes
+      operationId: listCustomerMemberships
+      summary: Membresías del cliente
+      description: 'Esqueleto: se completa en la Etapa 3.'
+      x-required-permission: customers.read
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Cliente
+        schema:
+          type: string
+          format: uuid
+      - *id001
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Membresías
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /customers/{customerId}/payments:
+    get:
+      tags:
+      - Clientes
+      operationId: listCustomerPayments
+      summary: Pagos del cliente
+      description: 'Esqueleto: se completa en la Etapa 3. El instructor no tiene este permiso.'
+      x-required-permission: payments.read
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Cliente
+        schema:
+          type: string
+          format: uuid
+      - *id001
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Pagos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /customers/{customerId}/attendance:
+    get:
+      tags:
+      - Clientes
+      operationId: listCustomerAttendance
+      summary: Asistencias del cliente
+      description: 'Esqueleto: se completa en la Etapa 5.'
+      x-required-permission: customers.read
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Cliente
+        schema:
+          type: string
+          format: uuid
+      - *id001
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Asistencias
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendancePage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /admin/tenants:
+    get:
+      tags:
+      - Administración global
+      operationId: adminListTenants
+      summary: Listar establecimientos
+      description: Solo SUPER_ADMIN, con MFA.
+      x-required-permission: admin.tenants.read
+      parameters:
+      - *id001
+      - *id002
+      - *id003
+      - name: q
+        in: query
+        schema:
+          type: string
+          maxLength: 100
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/TenantStatus'
+      responses:
+        '200':
+          description: Establecimientos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    post:
+      tags:
+      - Administración global
+      operationId: adminCreateTenant
+      summary: Dar de alta un establecimiento
+      description: 'Acción sensible: queda en auditoría.'
+      x-required-permission: admin.tenants.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantCreate'
+      responses:
+        '201':
+          description: Establecimiento creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /admin/tenants/{tenantId}:
+    get:
+      tags:
+      - Administración global
+      operationId: adminGetTenant
+      summary: Consultar un establecimiento
+      x-required-permission: admin.tenants.read
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        description: Establecimiento
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Establecimiento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: tempo_session
+      description: Cookie HttpOnly, Secure y SameSite entregada por el BFF. El nombre es provisional.
+  headers:
+    CorrelationId:
+      description: Identificador de la petición para rastrear errores.
+      schema:
+        type: string
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    Cursor:
+      name: cursor
+      in: query
+      description: Valor de nextCursor de la página anterior.
+      schema:
+        type: string
+    Sort:
+      name: sort
+      in: query
+      description: Campo de orden. Prefijo - para descendente.
+      schema:
+        type: string
+        example: -createdAt
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: Clave única por intento. Repetirla no duplica el efecto.
+      schema:
+        type: string
+        maxLength: 100
+  responses:
+    BadRequest:
+      description: Datos inválidos. `details` indica los campos.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Sin sesión válida.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Sin permiso en el contexto activo.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No existe o no pertenece al establecimiento activo.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Choca con el estado actual (duplicado o límite del plan).
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Demasiadas peticiones.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Código estable en snake_case, por ejemplo membership_expired.
+        message:
+          type: string
+          description: Texto legible. Puede cambiar; no se debe usar para decidir lógica.
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+        correlationId:
+          type: string
+          description: Mismo valor que el encabezado X-Correlation-Id.
+      required:
+      - code
+      - message
+      - correlationId
+    FieldError:
+      type: object
+      properties:
+        field:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - field
+      - code
+      - message
+    Money:
+      type: object
+      properties:
+        amount:
+          type: integer
+          format: int64
+          description: 'Unidades menores: 89000 = $890.00.'
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: ISO 4217
+          example: MXN
+      required:
+      - amount
+      - currency
+    Role:
+      type: string
+      enum:
+      - SUPER_ADMIN
+      - BUSINESS_OWNER
+      - BUSINESS_ADMIN
+      - MANAGER
+      - RECEPTIONIST
+      - INSTRUCTOR
+      - CUSTOMER
+    Context:
+      type: object
+      properties:
+        id: &id004
+          type: string
+          format: uuid
+        tenantName:
+          type: string
+        branchName:
+          type: string
+          nullable: true
+        role:
+          $ref: '#/components/schemas/Role'
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Permisos granulares del rol en este contexto, por ejemplo customers.read. Sirven para mostrar
+            u ocultar opciones; el backend los vuelve a validar siempre.
+      required:
+      - id
+      - tenantName
+      - branchName
+      - role
+    SwitchContextRequest:
+      type: object
+      properties:
+        contextId: *id004
+      required:
+      - contextId
+    Me:
+      type: object
+      properties:
+        id: *id004
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        emailVerified:
+          type: boolean
+        mfaEnabled:
+          type: boolean
+        activeContextId:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - id
+      - email
+      - fullName
+      - emailVerified
+      - mfaEnabled
+      - activeContextId
+    Session:
+      type: object
+      properties:
+        id: *id004
+        userAgent:
+          type: string
+        createdAt: &id005
+          type: string
+          format: date-time
+        lastSeenAt: *id005
+        current:
+          type: boolean
+      required:
+      - id
+      - createdAt
+      - lastSeenAt
+      - current
+    TenantStatus:
+      type: string
+      enum:
+      - TRIAL
+      - ACTIVE
+      - SUSPENDED
+    Niche:
+      type: string
+      enum:
+      - GYM
+      - DANCE
+      - MARTIAL_ARTS
+      - YOGA_PILATES
+      - BOXING
+      - COURSES
+      - SWIMMING
+      - FUNCTIONAL
+    Tenant:
+      type: object
+      properties:
+        id: *id004
+        name:
+          type: string
+        niche:
+          $ref: '#/components/schemas/Niche'
+        status:
+          $ref: '#/components/schemas/TenantStatus'
+        timezone:
+          type: string
+          description: Zona horaria IANA
+          example: America/Mexico_City
+        primaryColor:
+          type: string
+          pattern: ^#[0-9a-fA-F]{6}$
+          nullable: true
+        enabledModules:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        createdAt: *id005
+      required:
+      - id
+      - name
+      - niche
+      - status
+      - timezone
+      - createdAt
+    TenantCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        niche:
+          $ref: '#/components/schemas/Niche'
+        timezone:
+          type: string
+        ownerEmail:
+          type: string
+          format: email
+        saasPlanId: *id004
+      required:
+      - name
+      - niche
+      - timezone
+      - ownerEmail
+      - saasPlanId
+    TenantUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        timezone:
+          type: string
+        primaryColor:
+          type: string
+          pattern: ^#[0-9a-fA-F]{6}$
+          nullable: true
+    TenantPage:
+      type: object
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tenant'
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor de la siguiente página. null si no hay más resultados.
+    BranchStatus:
+      type: string
+      enum:
+      - ACTIVE
+      - INACTIVE
+    Branch:
+      type: object
+      properties:
+        id: *id004
+        name:
+          type: string
+        address:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/BranchStatus'
+        createdAt: *id005
+      required:
+      - id
+      - name
+      - status
+      - createdAt
+    BranchCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        address:
+          type: string
+          maxLength: 250
+        phone:
+          type: string
+          maxLength: 30
+      required:
+      - name
+    BranchUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        address:
+          type: string
+          maxLength: 250
+        phone:
+          type: string
+          maxLength: 30
+        status:
+          $ref: '#/components/schemas/BranchStatus'
+    BranchPage:
+      type: object
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Branch'
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor de la siguiente página. null si no hay más resultados.
+    TenantSettings:
+      type: object
+      properties:
+        cancellationWindowMinutes:
+          type: integer
+          minimum: 0
+          example: 120
+        waitlistEnabled:
+          type: boolean
+        expirationReminderDays:
+          type: integer
+          minimum: 0
+          example: 3
+        requireBiometricConsent:
+          type: boolean
+        requireActiveMembershipForAccess:
+          type: boolean
+      required:
+      - cancellationWindowMinutes
+      - waitlistEnabled
+      - expirationReminderDays
+    TenantSettingsUpdate:
+      type: object
+      properties:
+        cancellationWindowMinutes:
+          type: integer
+          minimum: 0
+        waitlistEnabled:
+          type: boolean
+        expirationReminderDays:
+          type: integer
+          minimum: 0
+        requireBiometricConsent:
+          type: boolean
+        requireActiveMembershipForAccess:
+          type: boolean
+    CustomerStatus:
+      type: string
+      enum:
+      - INVITED
+      - ACTIVE
+      - INACTIVE
+    MembershipStatus:
+      type: string
+      enum:
+      - ACTIVE
+      - PENDING
+      - EXPIRED
+      - SUSPENDED
+      - CANCELLED
+    Customer:
+      type: object
+      properties:
+        id: *id004
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        birthDate:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/CustomerStatus'
+        branchId:
+          type: string
+          format: uuid
+          nullable: true
+        membershipStatus:
+          allOf:
+          - $ref: '#/components/schemas/MembershipStatus'
+          nullable: true
+        membershipEndsAt:
+          type: string
+          format: date-time
+          nullable: true
+        customFields:
+          type: object
+          additionalProperties: true
+          description: Valores de los campos personalizados definidos por el establecimiento.
+        createdAt: *id005
+      required:
+      - id
+      - fullName
+      - status
+      - createdAt
+    CustomerCreate:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 30
+        birthDate:
+          type: string
+          format: date
+        branchId: *id004
+        sendInvitation:
+          type: boolean
+          default: true
+        customFields:
+          type: object
+          additionalProperties: true
+      required:
+      - fullName
+    CustomerUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 30
+        birthDate:
+          type: string
+          format: date
+        branchId: *id004
+        customFields:
+          type: object
+          additionalProperties: true
+    CustomerPage:
+      type: object
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor de la siguiente página. null si no hay más resultados.
+    Membership:
+      type: object
+      properties:
+        id: *id004
+        planName:
+          type: string
+        status:
+          $ref: '#/components/schemas/MembershipStatus'
+        startsAt: *id005
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        remainingCredits:
+          type: integer
+          nullable: true
+          minimum: 0
+      required:
+      - id
+      - planName
+      - status
+      - startsAt
+    MembershipPage:
+      type: object
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Membership'
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor de la siguiente página. null si no hay más resultados.
+    PaymentStatus:
+      type: string
+      enum:
+      - PENDING
+      - PROCESSING
+      - APPROVED
+      - REJECTED
+      - CANCELLED
+      - REFUNDED
+      - PARTIALLY_REFUNDED
+    Payment:
+      type: object
+      properties:
+        id: *id004
+        concept:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Money'
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        method:
+          type: string
+          enum:
+          - CASH
+          - TRANSFER
+          - CARD
+          - PROVIDER
+        createdAt: *id005
+      required:
+      - id
+      - concept
+      - amount
+      - status
+      - method
+      - createdAt
+    PaymentPage:
+      type: object
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor de la siguiente página. null si no hay más resultados.
+    AttendanceRecord:
+      type: object
+      properties:
+        id: *id004
+        checkedInAt: *id005
+        branchId: *id004
+        method:
+          type: string
+          enum:
+          - QR
+          - MANUAL
+          - FINGERPRINT
+          - FACE
+          - CARD
+        result:
+          type: string
+          enum:
+          - ACCEPTED
+          - REJECTED
+        rejectionReason:
+          type: string
+          nullable: true
+      required:
+      - id
+      - checkedInAt
+      - branchId
+      - method
+      - result
+    AttendancePage:
+      type: object
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceRecord'
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor de la siguiente página. null si no hay más resultados.

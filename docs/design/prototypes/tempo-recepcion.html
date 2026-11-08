@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6A4DFF">
+<title>Tempo | Recepción</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F6FB;--sf:#fff;--ink:#101216;--mu:#5E6270;--ln:#E2E3EC;--br:#6A4DFF;--bs:#EFEAFF;--ok:#177A4B;--oks:#E1F5EA;--wa:#8A5A00;--was:#FFF1D6;--er:#C62F3E;--ers:#FDE6E8;--lg:#101216;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#101216;--sf:#181B21;--ink:#F4F5FA;--mu:#9EA3B3;--ln:#2A2E38;--br:#7357FF;--bs:#271F52;--ok:#4CD08B;--oks:#13301F;--wa:#F2B84B;--was:#3A2C0C;--er:#FF7A86;--ers:#3B1A1F;--lg:#F4F5FA}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#101216;--sf:#181B21;--ink:#F4F5FA;--mu:#9EA3B3;--ln:#2A2E38;--br:#7357FF;--bs:#271F52;--ok:#4CD08B;--oks:#13301F;--wa:#F2B84B;--was:#3A2C0C;--er:#FF7A86;--ers:#3B1A1F;--lg:#F4F5FA}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--br);outline-offset:2px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:10px;padding:10px 16px}
+.lg{color:var(--lg)}.lg svg{width:34px;height:34px;display:block}
+.ctx{display:flex;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:6px 10px;min-height:44px;font-size:13px;line-height:1.2;text-align:left;margin-left:auto;min-width:0}
+.ctx b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ctx .r{color:var(--mu)}
+.ib{width:44px;height:44px;border-radius:12px;border:1px solid var(--ln);background:var(--sf);font-size:18px;flex:none}
+main{padding:8px 16px 24px;max-width:640px;margin:0 auto}
+h1{font:600 26px/1.2 Outfit,sans-serif;margin:12px 0 4px;letter-spacing:-.3px}
+.sub{color:var(--mu);margin:0 0 14px}
+.scan{width:100%;min-height:150px;border-radius:24px;border:0;background:var(--br);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font:600 22px Outfit,sans-serif;margin:6px 0 12px}
+.scan svg{width:48px;height:48px}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:6px 0 4px;scrollbar-width:none}
+.chips button{flex:none;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--ln);background:var(--sf);font-weight:500}
+.chips button[aria-checked=true]{background:var(--bs);border-color:var(--br);color:var(--br);font-weight:600}
+.chips button:disabled{opacity:.45;cursor:not-allowed}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.btn{min-height:52px;padding:0 18px;border-radius:14px;border:0;background:var(--br);color:#fff;font-weight:600}
+.btn.s{background:var(--sf);color:var(--ink);border:1.5px solid var(--ln)}.btn.d{background:var(--ers);color:var(--er)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.kpi{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:10px 12px}
+.kpi small{color:var(--mu);font-size:12px}.kpi strong{display:block;font:600 22px Outfit,sans-serif}
+h2{font:600 18px Outfit,sans-serif;margin:18px 0 10px}
+.list{display:grid;gap:10px}
+.row{display:flex;gap:12px;align-items:center;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:12px 14px;min-height:64px;text-align:left;width:100%}
+.av{flex:none;width:42px;height:42px;border-radius:12px;background:var(--bs);color:var(--br);display:grid;place-items:center;font:600 16px Outfit,sans-serif}
+.row .t{flex:1;min-width:0}.row b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row small{color:var(--mu)}
+.pill{flex:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px}
+.p-ok{background:var(--oks);color:var(--ok)}.p-wa{background:var(--was);color:var(--wa)}.p-er{background:var(--ers);color:var(--er)}.p-n{background:var(--bs);color:var(--br)}
+.amt{flex:none;font-weight:600}
+.search{width:100%;min-height:52px;border-radius:14px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);padding:0 16px;font:inherit;margin-bottom:12px}
+.note{background:var(--bs);border-radius:14px;padding:12px 14px;font-size:14px;margin:0 0 14px}
+.tab{position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:6}
+.tab button{background:none;border:0;min-height:56px;border-radius:12px;color:var(--mu);font-size:12px;font-weight:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tab button span{font-size:20px;line-height:1}
+.tab button[aria-current=page]{color:var(--br);font-weight:600}
+.sheet{position:fixed;inset:0;background:rgba(10,10,20,.5);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheet.on{display:flex}
+.in{background:var(--sf);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow:auto}
+.in h2{font-size:22px;margin:0 0 4px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--ln)}.kv span{color:var(--mu)}
+.acts{display:grid;gap:8px;margin-top:16px}
+.fld{margin-bottom:14px}.fld label{display:block;font-weight:500;font-size:14px;margin-bottom:6px}
+.fld input,.fld select{width:100%;min-height:52px;border-radius:12px;border:1.5px solid var(--ln);background:var(--bg);color:var(--ink);padding:0 14px;font:inherit}
+.res{position:fixed;inset:0;z-index:25;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:28px;gap:6px}
+.res.on{display:flex}
+.res.ok{background:var(--ok);color:#fff}.res.wa{background:#B87500;color:#fff}.res.er{background:var(--er);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .res.ok{background:#14663F}:root:not([data-theme="light"]) .res.er{background:#A62734}}
+:root[data-theme="dark"] .res.ok{background:#14663F}:root[data-theme="dark"] .res.er{background:#A62734}
+.res .big{font-size:72px;line-height:1}.res h2{font:700 32px Outfit,sans-serif;margin:8px 0 0;color:inherit}
+.res p{margin:0;font-size:17px;opacity:.95}.res .nm{font:600 24px Outfit,sans-serif}
+.res button{margin-top:24px;min-height:56px;width:100%;max-width:340px;border-radius:14px;border:0;background:#fff;color:#101216;font-weight:600;font-size:17px}
+.res button.g{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7);margin-top:10px}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;display:none;z-index:30;max-width:90%}
+.set{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--ln);min-height:56px}.set small{display:block;color:var(--mu)}
+.sw{flex:none;width:52px;height:32px;border-radius:99px;border:0;background:var(--ln);position:relative}.sw::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}.sw[aria-checked=true]{background:var(--br)}.sw[aria-checked=true]::after{left:24px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:4px 16px;margin:14px 0}
+h1{letter-spacing:-.4px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mk" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="36" cy="38" r="19"/><path d="M31 11h10M36 11v6M51 20l4-4M54 14l4 4M3 31h9M1 38h11M5 45h8"/></g><path d="M28 38l6 6 10-11" fill="none" stroke="#6A4DFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="qr" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V8a2 2 0 012-2h8M32 6h8a2 2 0 012 2v8M42 32v8a2 2 0 01-2 2h-8M16 42H8a2 2 0 01-2-2v-8"/><rect x="14" y="14" width="8" height="8" rx="1"/><rect x="26" y="14" width="8" height="8" rx="1"/><rect x="14" y="26" width="8" height="8" rx="1"/><path d="M27 27h3v3M34 27v7h-7"/></g></symbol></svg>
+<header>
+  <div class="lg" role="img" aria-label="Tempo" style="display:flex;align-items:center;gap:6px"><svg><use href="#mk"/></svg><span aria-hidden="true" style="font:600 22px Outfit,sans-serif">tempo</span></div>
+  <button class="ctx" id="ctx" aria-label="Cambiar de contexto"><span class="av" style="width:30px;height:30px;font-size:13px;border-radius:8px">GT</span><span style="min-width:0"><b>Gimnasio Titan · Centro</b><span class="r">Recepción</span></span></button>
+  <button class="ib" id="tg" aria-label="Cambiar tema">◐</button>
+</header>
+<main id="main"></main>
+<div class="tab" id="tab" role="navigation" aria-label="Secciones"></div>
+<div class="sheet" id="sh" role="dialog" aria-modal="true"><div class="in" id="shin"></div></div>
+<div class="res" id="rs" role="alertdialog" aria-live="assertive"></div>
+<div class="toast" id="to" role="status"></div>
+
+<script>
+var $=function(s){return document.querySelector(s)};
+var TABS=[["rec","Recepción","▣"],["cli","Clientes","☺"],["pag","Pagos","$"],["asi","Asistencia","✓"],["acc","Accesos","⚙"]];
+var CLI=[["Ana Torres","Mensual Pro","ok","Activa","Vence 18 nov"],["Luis Herrera","Mensual","wa","Por vencer","Vence 06 nov · 1 día"],["Marcela Ortiz","Paquete 10 clases","ok","Activa","7 créditos"],["Diego Salas","Mensual","er","Vencida","Venció 25 oct"],["Paola Mena","Trimestral","ok","Activa","Vence 20 ene"],["Rafael Cruz","Mensual","n","Pendiente","Pago por confirmar"]];
+var ASI=[["Marcela Ortiz","08:05","Manual","ok"],["Paola Mena","07:40","Huella","ok"],["Diego Salas","07:15","Rostro · membresía vencida","er"],["Ana Torres","07:02","Tarjeta","ok"]];
+var METH=[["qr","Código QR","Escanear QR del cliente",true,"Cámara del dispositivo · lista",""],["fp","Huella","Colocar la huella",true,"Lector de huella · conectado","☝"],["face","Rostro","Mirar a la cámara",true,"Cámara facial de entrada · conectada","☺"],["card","Tarjeta","Acercar tarjeta o llavero",true,"Lector NFC · conectado","▭"],["pin","Código","Escribir código del cliente",false,"Desactivado por el negocio",""]];
+var M="qr";
+function MD(){return METH.filter(function(m){return m[0]===M})[0]}
+var PAG=[["Ana Torres","Mensual Pro","$890","Tarjeta · 09:12"],["Rafael Cruz","Mensual","$650","Transferencia · 08:40"],["Paola Mena","Trimestral","$1,700","Efectivo · ayer"]];
+var SC=[0,1,3,0];var si=0;
+var DEV=[["Lector de QR","Cámara de recepción · Centro","▣","ok","En línea","Hace 2 min","Cámara del dispositivo",1],["Lector de huellas","ZKTeco · Puerta principal","☝","ok","En línea","Hace 5 min","Red local · 192.168.1.40",1],["Reconocimiento facial","Hikvision · Torniquete","☺","er","Sin conexión","Desde las 06:40","Red local · 192.168.1.52",1],["Lector de tarjetas","RFID 13.56 MHz · Vestidores","▭","wa","Sin probar","Nunca","USB",0]];
+var cur="rec";
+function pill(c,t){return '<span class="pill p-'+c+'">'+t+'</span>'}
+function ini(n){return n.split(' ').slice(0,2).map(function(x){return x[0]}).join('')}
+function row(av,t,s,r,k,i){return '<button class="row" data-k="'+k+'" data-i="'+i+'"><span class="av">'+av+'</span><span class="t"><b>'+t+'</b><small>'+s+'</small></span>'+r+'</button>'}
+function head(t,s){return '<h1>'+t+'</h1><p class="sub">'+s+'</p>'}
+function cliList(){var q=($('#q')||{value:""}).value.toLowerCase();var f=CLI.filter(function(x){return x[0].toLowerCase().indexOf(q)>-1});return f.length?f.map(function(x){return row(ini(x[0]),x[0],x[1]+" · "+x[4],pill(x[2],x[3]),"cli",CLI.indexOf(x))}).join(''):'<p class="sub">Sin resultados. Revisa el nombre o registra al cliente en Clientes.</p>'}
+function asiList(a){return a.map(function(x,i){return row(ini(x[0]),x[0],x[1]+" · "+x[2],pill(x[3],x[3]==="ok"?"Entró":"Rechazada"),"asi",i)}).join('')}
+var V={
+rec:function(){return head("Recepción","Sucursal Centro · 5 de noviembre")+
+'<div class="chips" role="radiogroup" aria-label="Método de acceso">'+METH.map(function(m){return '<button role="radio" data-m="'+m[0]+'" aria-checked="'+(m[0]===M)+'"'+(m[3]?'':' disabled')+'>'+m[1]+'</button>'}).join('')+'</div>'+'<button class="scan" data-scan>'+(MD()[5]?'<span style="font-size:44px;line-height:1" aria-hidden="true">'+MD()[5]+'</span>':'<svg><use href="#qr"/></svg>')+MD()[2]+'</button><p class="sub" style="text-align:center;margin-top:-4px">'+MD()[4]+'. Conecta o prueba tus equipos en Accesos.</p>'+
+'<div class="two"><button class="btn s" data-sheet="man">Registro manual</button><button class="btn s" data-sheet="buscar">Buscar cliente</button></div>'+
+'<button class="row" data-t="acc" style="margin-bottom:16px"><span class="av" style="background:var(--was);color:var(--wa)">!</span><span class="t"><b>1 dispositivo sin conexión</b><small>Reconocimiento facial · Torniquete</small></span><span style="color:var(--mu);font-size:20px">›</span></button>'+
+'<div class="kpis"><div class="kpi"><small>Entradas hoy</small><strong>86</strong></div><div class="kpi"><small>Rechazadas</small><strong>3</strong></div><div class="kpi"><small>Por vencer</small><strong>14</strong></div></div>'+
+'<h2>Últimas entradas</h2><div class="list">'+asiList(ASI.slice(0,3))+'</div>'},
+cli:function(){return head("Clientes","Consulta y validación de membresías")+'<input class="search" id="q" type="search" placeholder="Buscar por nombre" aria-label="Buscar cliente"><div class="list" id="cl">'+cliList()+'</div>'},
+pag:function(){return head("Pagos","Cobros autorizados para recepción")+'<button class="btn" style="width:100%;margin-bottom:12px" data-sheet="pay">Registrar pago</button><p class="note">Los reembolsos los autoriza un gerente o el propietario.</p><div class="list">'+PAG.map(function(p){return row(ini(p[0]),p[0],p[1]+" · "+p[3],'<span class="amt">'+p[2]+'</span>',"p",0)}).join('')+'</div>'},
+asi:function(){return head("Asistencia","Entradas de hoy en Centro")+'<div class="list">'+asiList(ASI)+'</div>'},
+acc:function(){return head("Accesos","Equipos que registran la entrada en Centro")+'<p class="note">Todos los métodos validan la membresía en el servidor y registran la asistencia igual que el QR.</p><div class="list">'+DEV.map(function(d,i){return row('<span aria-hidden="true">'+d[2]+'</span>',d[0],d[1],pill(d[3],d[4]),"dev",i)}).join('')+'</div><button class="btn" style="width:100%;margin-top:12px" data-sheet="add">Agregar dispositivo</button><div class="card"><div class="set"><span>Validar membresía activa<small>Rechaza a quien la tenga vencida</small></span><button class="sw" role="switch" aria-checked="true" aria-label="Validar membresía"></button></div><div class="set"><span>Evitar entradas repetidas<small>Ignora un segundo registro en 10 min</small></span><button class="sw" role="switch" aria-checked="true" aria-label="Evitar repetidas"></button></div><div class="set" style="border:0"><span>Permitir registro manual<small>Para quien no pueda usar un equipo</small></span><button class="sw" role="switch" aria-checked="true" aria-label="Registro manual"></button></div></div>'}
+};
+function render(){
+ $('#tab').innerHTML=TABS.map(function(t){return '<button data-t="'+t[0]+'"'+(t[0]===cur?' aria-current="page"':'')+'><span aria-hidden="true">'+t[2]+'</span>'+t[1]+'</button>'}).join('');
+ $('#main').innerHTML=V[cur]();
+ var q=$('#q');if(q)q.addEventListener('input',function(){$('#cl').innerHTML=cliList()});
+}
+function toast(t){var e=$('#to');e.textContent=t;e.style.display='block';setTimeout(function(){e.style.display='none'},2200)}
+function open(h){$('#shin').innerHTML=h;$('#sh').classList.add('on')}
+function close(){$('#sh').classList.remove('on')}
+function kv(a,b){return '<div class="kv"><span>'+a+'</span><b>'+b+'</b></div>'}
+var X='<button class="btn s" data-x>Cerrar</button>';
+function scan(){var c=CLI[SC[si++%SC.length]];var k=c[2]==="ok"?"ok":c[2]==="wa"?"wa":"er";
+ var big=k==="ok"?"✓":k==="wa"?"!":"✕";var t=k==="ok"?"Acceso permitido":k==="wa"?"Permitido, vence pronto":"Acceso rechazado";
+ var extra=k==="ok"?"Entrada registrada · "+c[4]:k==="wa"?c[4]:"Membresía vencida · "+c[4];
+ $('#rs').className='res on '+k;
+ $('#rs').innerHTML='<div class="big" aria-hidden="true">'+big+'</div><h2>'+t+'</h2><div class="nm">'+c[0]+'</div><p>'+c[1]+'</p><p>'+extra+'</p><p>Método: '+MD()[1]+'</p>'+(k==="ok"?'<button data-x2>Siguiente cliente</button>':k==="wa"?'<button data-x2>Siguiente cliente</button><button class="g" data-x2 data-sheet="pay">Cobrar renovación</button>':'<button data-x2 data-sheet="pay">Cobrar renovación</button><button class="g" data-x2>Rechazar entrada</button>')}
+document.addEventListener('click',function(e){
+ if(e.target.closest('[data-scan]')){scan();return}
+ var sw=e.target.closest('.sw');if(sw){sw.setAttribute('aria-checked',sw.getAttribute('aria-checked')!=='true');return}
+ var mm=e.target.closest('[data-m]');if(mm){M=mm.dataset.m;render();return}
+ var t=e.target.closest('[data-t]');if(t){cur=t.dataset.t;render();window.scrollTo(0,0);return}
+ var s=e.target.closest('[data-sheet]');
+ if(e.target.closest('[data-x2]'))$('#rs').className='res';
+ if(s){open(SH[s.dataset.sheet]);return}
+ if(e.target.closest('[data-x2]'))return;
+ var m=e.target.closest('[data-toast]');if(m){close();toast(m.dataset.toast);return}
+ if(e.target.id==='sh'||e.target.closest('[data-x]')){close();return}
+ var r=e.target.closest('[data-k]');if(!r)return;var k=r.dataset.k,i=+r.dataset.i;
+ if(k==="cli"){var c=CLI[i];open('<h2>'+c[0]+'</h2><p class="sub">'+c[1]+'</p>'+kv("Estado",pill(c[2],c[3]))+kv("Detalle",c[4])+'<div class="acts"><button class="btn" data-toast="Entrada registrada para '+c[0]+'">Registrar entrada</button><button class="btn s" data-sheet="pay">Cobrar renovación</button>'+X+'</div>')}
+ else if(k==="asi"){var a=ASI[i];open('<h2>'+a[0]+'</h2><p class="sub">'+a[1]+' · '+a[2]+'</p>'+kv("Resultado",pill(a[3],a[3]==="ok"?"Entró":"Rechazada"))+'<div class="acts">'+X+'</div>')}
+ else if(k==="dev"){var d=DEV[i];var off=d[3]==='er';open('<h2>'+d[0]+'</h2><p class="sub">'+d[1]+'</p>'+kv("Estado",pill(d[3],d[4]))+kv("Conexión",d[6])+kv("Último evento",d[5])+'<div class="set"><span>Activo<small>Si lo apagas, no registra entradas</small></span><button class="sw" role="switch" aria-checked="'+(d[7]?'true':'false')+'" aria-label="Activar dispositivo"></button></div><div class="acts"><button class="btn" data-toast="'+(off?'No responde. Revisa que el equipo esté encendido y en la red.':'Conexión correcta. Evento de prueba recibido.')+'">Probar conexión</button><button class="btn s" data-sheet="add">Editar configuración</button><button class="btn d" data-toast="Eliminar requiere permiso del propietario">Eliminar dispositivo</button>'+X+'</div>')}
+ else if(k==="p"){open('<h2>Comprobante interno</h2><p class="sub">No es una factura fiscal (CFDI).</p><div class="acts"><button class="btn s" data-toast="Comprobante compartido">Compartir comprobante</button>'+X+'</div>')}
+});
+var opts=CLI.map(function(c){return '<option>'+c[0]+'</option>'}).join('');
+var SH={add:'<h2>Agregar dispositivo</h2><p class="sub">Conecta el equipo para que registre entradas en Tempo.</p><div class="fld"><label for="a1">Tipo de acceso</label><select id="a1"><option>Lector de huellas</option><option>Reconocimiento facial</option><option>Lector de tarjetas o llaveros</option><option>Lector de QR</option><option>Torniquete o cerradura</option></select></div><div class="fld"><label for="a2">Nombre del acceso</label><input id="a2" placeholder="Puerta principal"></div><div class="fld"><label for="a3">Marca y modelo</label><input id="a3" placeholder="ZKTeco SpeedFace"></div><div class="fld"><label for="a4">Tipo de conexión</label><select id="a4"><option>Red local (IP)</option><option>API en la nube</option><option>USB</option><option>Bluetooth</option></select></div><div class="fld"><label for="a5">Dirección IP o ID del equipo</label><input id="a5" inputmode="decimal" placeholder="192.168.1.40"></div><div class="fld"><label for="a6">Ubicación</label><select id="a6"><option>Centro</option><option>Polanco</option><option>Sur</option></select></div><p class="note">Huella y rostro guardan una plantilla cifrada, no la imagen. Pide el consentimiento del cliente en el aviso de privacidad.</p><div class="acts"><button class="btn" data-toast="Guardado. Probando conexión…">Guardar y probar</button>'+X+'</div>',
+man:'<h2>Registro manual</h2><p class="sub">Úsalo si el cliente no puede mostrar su QR.</p><div class="fld"><label for="m1">Cliente</label><select id="m1">'+opts+'</select></div><div class="acts"><button class="btn" data-toast="Entrada registrada">Validar y registrar entrada</button>'+X+'</div>',
+buscar:'<h2>Buscar cliente</h2><div class="fld"><label for="b1">Nombre</label><input id="b1" type="search" placeholder="Nombre y apellido"></div><div class="acts"><button class="btn" data-t="cli" data-x>Buscar</button>'+X+'</div>',
+pay:'<h2>Registrar pago</h2><p class="sub">Se asocia a la membresía del cliente.</p><div class="fld"><label for="p1">Cliente</label><select id="p1">'+opts+'</select></div><div class="fld"><label for="p2">Monto (MXN)</label><input id="p2" inputmode="decimal" placeholder="650"></div><div class="fld"><label for="p3">Método</label><select id="p3"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select></div><div class="acts"><button class="btn" data-toast="Pago registrado">Registrar pago</button>'+X+'</div>'
+};
+$('#ctx').addEventListener('click',function(){open('<h2>Cambiar de espacio</h2><p class="sub">Sin cerrar sesión.</p><div class="list">'+[["GT","Gimnasio Titan · Centro","Recepción"],["AD","Academia Dance","Cliente"]].map(function(c){return '<button class="row" data-toast="Cambiando a '+c[1]+'…"><span class="av">'+c[0]+'</span><span class="t"><b>'+c[1]+'</b><small>'+c[2]+'</small></span></button>'}).join('')+'</div>')});
+$('#tg').addEventListener('click',function(){var r=document.documentElement,d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=d?'light':'dark'});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();$('#rs').className='res'}});
+(function(){var C=[["L","Libiter","Superadministrador","YBMqAebLzFoijBGDA35R35"],["GT","Gimnasio Titan","Propietario","P8ztf3F31bM814VKL42G1i"],["GT","Gimnasio Titan · Centro","Recepción","UCuK7tpyTy7ZKcCfrNuCMr"],["AD","Academia Dance","Instructor","NVa9SggYm1sFtTa3sb5BhL"],["GT","Gimnasio Titan","Cliente","HEpEpwWdHPfAGumFbtxVf7"]],N=2;
+$('#ctx').addEventListener('click',function(){open('<h2>Cambiar de espacio</h2><p class="sub">Sin cerrar sesión. Cada espacio se abre en una pestaña nueva.</p><div class="list">'+C.map(function(c,i){var h='<span class="av">'+c[0]+'</span><span class="t"><b>'+c[1]+'</b><small>'+c[2]+(i===N?' · actual':'')+'</small></span>';return i===N?'<div class="row" style="border-color:var(--br)">'+h+'</div>':'<a class="row" style="text-decoration:none;color:inherit" href="https://claude.ai/artifact/'+c[3]+'" target="_blank" rel="noopener">'+h+'</a>'}).join('')+'</div>')});
+function trap(sh,sel){var last=null;new MutationObserver(function(){if(sh.classList.contains('on')){last=document.activeElement;var f=sh.querySelector(sel);if(f)f.focus()}else if(last){last.focus();last=null}}).observe(sh,{attributes:true,attributeFilter:['class']});sh.addEventListener('keydown',function(e){if(e.key!=='Tab')return;var f=sh.querySelectorAll(sel);if(!f.length)return;var a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}})}
+trap(document.getElementById('sh'),'button,a[href],input,select,textarea');trap(document.getElementById('rs'),'button');})();
+render();
+</script>
+</body>
+</html>

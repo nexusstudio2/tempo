@@ -1,0 +1,17 @@
+# Entorno local. Verifica versiones e imágenes antes de fijarlas (spec 4.2).
+# Aurora MySQL es compatible con MySQL 8.0.
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: tempo
+      MYSQL_USER: tempo
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports: ["3306:3306"]
+    volumes: ["mysql-data:/var/lib/mysql"]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+volumes:
+  mysql-data:

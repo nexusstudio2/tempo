@@ -1,0 +1,7 @@
+# Reemplaza por los usuarios de GitHub de cada responsable.
+/services/api/        @responsable-backend
+/database/            @responsable-backend
+/infrastructure/      @responsable-backend
+/apps/web/            @responsable-frontend
+/contracts/           @responsable-backend @responsable-frontend
+/docs/                @responsable-backend @responsable-frontend

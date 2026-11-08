@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6A4DFF">
+<title>Tempo | Iniciar sesión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F6FB;--surface:#fff;--ink:#101216;--muted:#5E6270;--line:#E2E3EC;--brand:#6A4DFF;--brand-ink:#fff;--brand-soft:#EFEAFF;--err:#C62F3E;--ok:#177A4B;--logo:#101216;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#101216;--surface:#181B21;--ink:#F4F5FA;--muted:#9EA3B3;--line:#2A2E38;--brand:#7357FF;--brand-soft:#271F52;--err:#FF7A86;--ok:#4CD08B;--logo:#F4F5FA}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#101216;--surface:#181B21;--ink:#F4F5FA;--muted:#9EA3B3;--line:#2A2E38;--brand:#7357FF;--brand-soft:#271F52;--err:#FF7A86;--ok:#4CD08B;--logo:#F4F5FA}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.5}
+.shell{min-height:100vh;display:grid;grid-template-columns:1fr}
+.aside{display:none}
+main{display:flex;flex-direction:column;justify-content:center;padding:28px 22px 32px;max-width:460px;width:100%;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px}
+.logo{display:flex;align-items:center;gap:10px;color:var(--logo)}
+.logo svg{width:44px;height:44px}
+.logo span{font-family:Outfit,sans-serif;font-weight:600;font-size:32px;letter-spacing:-.5px;line-height:1}
+.tgl{background:var(--surface);border:1px solid var(--line);color:var(--ink);width:44px;height:44px;border-radius:12px;cursor:pointer;font-size:18px}
+h1{font-family:Outfit,sans-serif;font-weight:600;font-size:30px;line-height:1.15;margin:0 0 8px;letter-spacing:-.4px}
+.sub{color:var(--muted);margin:0 0 26px}
+.view{display:none}.view.on{display:block}
+label{display:block;font-weight:500;font-size:14px;margin:0 0 6px}
+.field{margin-bottom:18px}
+.inp{position:relative}
+input[type=email],input[type=password],input[type=text]{width:100%;height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;padding:0 16px}
+input:focus-visible,button:focus-visible,a:focus-visible,.ctx:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+input.bad{border-color:var(--err)}
+.eye{position:absolute;right:6px;top:4px;height:44px;padding:0 12px;background:none;border:0;color:var(--brand);font:inherit;font-weight:500;cursor:pointer}
+.msg{color:var(--err);font-size:14px;margin:6px 0 0;min-height:0}
+.row{display:flex;justify-content:space-between;align-items:center;margin:-4px 0 22px;font-size:14px}
+.row a,.lnk{color:var(--brand);font-weight:500;text-decoration:none;background:none;border:0;font:inherit;font-size:14px;font-weight:500;cursor:pointer;padding:8px 0}
+.chk{display:flex;align-items:center;gap:8px;margin:0;font-weight:400;min-height:44px}
+.chk input{width:20px;height:20px;accent-color:var(--brand)}
+.btn{width:100%;height:54px;border:0;border-radius:14px;background:var(--brand);color:var(--brand-ink);font:inherit;font-weight:600;font-size:16px;cursor:pointer}
+.btn:active{transform:scale(.99)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line);margin-top:10px}
+.btn[disabled]{opacity:.6}
+.foot{margin-top:26px;color:var(--muted);font-size:13px;text-align:center}
+.note{background:var(--brand-soft);border-radius:14px;padding:14px 16px;font-size:14px;margin-bottom:20px}
+.ok{color:var(--ok);font-weight:500}
+.ctxs{display:grid;gap:10px;margin-bottom:8px}
+.ctx{display:flex;align-items:center;gap:14px;text-align:left;width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:14px;color:var(--ink);font:inherit;cursor:pointer;min-height:68px}
+.ctx:hover,.ctx[aria-checked=true]{border-color:var(--brand)}
+.av{flex:none;width:44px;height:44px;border-radius:12px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-family:Outfit,sans-serif;font-weight:600;font-size:18px}
+.ctx b{display:block;font-weight:600}.ctx small{color:var(--muted);font-size:14px}
+.go{margin-left:auto;color:var(--muted);font-size:20px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-size:14px;display:none;max-width:90%}
+@media(min-width:900px){
+.shell{grid-template-columns:1.1fr 1fr}
+.aside{display:flex;flex-direction:column;justify-content:space-between;background:#6A4DFF;color:#fff;padding:48px}
+.aside h2{font-family:Outfit,sans-serif;font-size:44px;line-height:1.1;font-weight:600;letter-spacing:-1px;margin:0;max-width:11em}
+.aside p{max-width:28em;opacity:.9}
+.aside svg{width:84px;height:84px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mark" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="36" cy="38" r="19"/><path d="M31 11h10M36 11v6M51 20l4-4M54 14l4 4"/><path d="M3 31h9M1 38h11M5 45h8"/></g><path d="M28 38l6 6 10-11" fill="none" stroke="#6A4DFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" class="chkmark"/></symbol>
+</defs></svg>
+
+<div class="shell">
+<aside class="aside" aria-hidden="true">
+  <svg style="color:#fff"><use href="#mark"/></svg>
+  <div><h2>Tu negocio, a tiempo y en orden.</h2><p>Membresías, asistencia, clases y pagos en un solo lugar.</p></div>
+  <small>Un producto de Libiter</small>
+</aside>
+
+<main>
+  <div class="top">
+    <div class="logo" role="img" aria-label="Tempo"><svg><use href="#mark"/></svg><span>tempo</span></div>
+    <button class="tgl" id="tgl" aria-label="Cambiar entre tema claro y oscuro">◐</button>
+  </div>
+
+  <section class="view on" id="v-login" aria-labelledby="t1">
+    <h1 id="t1">Inicia sesión</h1>
+    <p class="sub">Un solo acceso para administradores, personal y clientes.</p>
+    <form id="f-login" novalidate>
+      <div class="field"><label for="em">Correo electrónico</label>
+        <input id="em" type="email" autocomplete="username" inputmode="email" placeholder="nombre@correo.com">
+        <p class="msg" id="e-em" role="alert"></p></div>
+      <div class="field"><label for="pw">Contraseña</label>
+        <div class="inp"><input id="pw" type="password" autocomplete="current-password" placeholder="Tu contraseña"><button type="button" class="eye" id="eye" aria-label="Mostrar contraseña">Mostrar</button></div>
+        <p class="msg" id="e-pw" role="alert"></p></div>
+      <div class="row"><label class="chk"><input type="checkbox" checked> Mantener sesión</label><button type="button" class="lnk" data-go="v-forgot">Olvidé mi contraseña</button></div>
+      <button class="btn" id="b-login" type="submit">Entrar</button>
+    </form>
+    <p class="foot">¿Aún no tienes acceso? Tu establecimiento te enviará una invitación por correo.</p>
+    <button class="btn ghost" type="button" data-go="v-inv">Ya tengo una invitación</button>
+  </section>
+
+  <section class="view" id="v-forgot" aria-labelledby="t2">
+    <h1 id="t2">Recupera tu contraseña</h1>
+    <p class="sub">Te enviaremos un enlace que caduca en 30 minutos.</p>
+    <form id="f-forgot" novalidate>
+      <div class="field"><label for="em2">Correo electrónico</label>
+        <input id="em2" type="email" autocomplete="email" inputmode="email" placeholder="nombre@correo.com">
+        <p class="msg" id="e-em2" role="alert"></p></div>
+      <button class="btn" type="submit">Enviar enlace</button>
+      <button class="btn ghost" type="button" data-go="v-login">Volver a iniciar sesión</button>
+    </form>
+  </section>
+
+  <section class="view" id="v-sent" aria-labelledby="t3">
+    <h1 id="t3">Revisa tu correo</h1>
+    <p class="note"><span class="ok">Enlace enviado.</span> Si el correo está registrado, recibirás instrucciones para crear una contraseña nueva.</p>
+    <button class="btn" type="button" data-go="v-login">Volver a iniciar sesión</button>
+  </section>
+
+  <section class="view" id="v-ctx" aria-labelledby="t4">
+    <h1 id="t4">¿Dónde quieres entrar?</h1>
+    <p class="sub">Tu cuenta tiene más de un espacio. Puedes cambiar de uno a otro sin volver a iniciar sesión.</p>
+    <div class="ctxs" role="radiogroup" aria-label="Contextos disponibles">
+      <button class="ctx" role="radio" aria-checked="false" data-n="Libiter" data-r="Superadministrador"><span class="av">L</span><span><b>Libiter</b><small>Superadministrador</small></span><span class="go">›</span></button>
+      <button class="ctx" role="radio" aria-checked="false" data-n="Gimnasio Titan" data-r="Propietario"><span class="av">GT</span><span><b>Gimnasio Titan</b><small>Propietario</small></span><span class="go">›</span></button>
+      <button class="ctx" role="radio" aria-checked="false" data-n="Gimnasio Titan · Centro" data-r="Recepción"><span class="av">GR</span><span><b>Gimnasio Titan · Centro</b><small>Recepción</small></span><span class="go">›</span></button>
+      <button class="ctx" role="radio" aria-checked="false" data-n="Academia Dance" data-r="Instructor"><span class="av">AD</span><span><b>Academia Dance</b><small>Instructor</small></span><span class="go">›</span></button>
+      <button class="ctx" role="radio" aria-checked="false" data-n="Gimnasio Titan" data-r="Cliente"><span class="av">GT</span><span><b>Gimnasio Titan</b><small>Cliente</small></span><span class="go">›</span></button>
+    </div>
+    <p class="foot" style="text-align:left;margin-top:8px">Prototipo: cuenta de demostración con todos los roles (cinco espacios). Cada uno se abre en una pestaña nueva. En producción solo verás los que tengas autorizados.</p>
+    <button class="btn ghost" type="button" data-go="v-login">Cerrar sesión</button>
+  </section>
+<section class="view" id="v-mfa" aria-labelledby="t5">
+    <h1 id="t5">Verificación en dos pasos</h1>
+    <p class="sub">Los superadministradores deben confirmar su identidad. Escribe el código de 6 dígitos de tu app de autenticación.</p>
+    <form id="f-mfa" novalidate>
+      <div class="field"><label for="cd">Código de verificación</label>
+        <input id="cd" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
+        <p class="msg" id="e-cd" role="alert"></p></div>
+      <button class="btn" type="submit">Verificar y entrar</button>
+      <button class="btn ghost" type="button" data-go="v-ctx">Volver</button>
+    </form>
+  </section>
+
+  <section class="view" id="v-inv" aria-labelledby="t6">
+    <h1 id="t6">Acepta tu invitación</h1>
+    <p class="note"><b>Gimnasio Titan</b> te invitó como Cliente. La invitación caduca el 12 de noviembre.</p>
+    <form id="f-inv" novalidate>
+      <div class="field"><label for="np">Crea tu contraseña</label>
+        <input id="np" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+        <p class="msg" id="e-np" role="alert"></p></div>
+      <div class="field"><label for="np2">Repite tu contraseña</label>
+        <input id="np2" type="password" autocomplete="new-password">
+        <p class="msg" id="e-np2" role="alert"></p></div>
+      <button class="btn" type="submit">Crear contraseña y entrar</button>
+      <button class="btn ghost" type="button" data-go="v-login">Volver</button>
+    </form>
+  </section>
+</main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+function show(id){document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on')});$('#'+id).classList.add('on');var h=$('#'+id+' h1');if(h){h.setAttribute('tabindex','-1');h.focus()}}
+document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){show(b.dataset.go)})});
+var U={'Libiter|Superadministrador':'YBMqAebLzFoijBGDA35R35','Gimnasio Titan|Propietario':'P8ztf3F31bM814VKL42G1i','Gimnasio Titan · Centro|Recepción':'UCuK7tpyTy7ZKcCfrNuCMr','Academia Dance|Instructor':'NVa9SggYm1sFtTa3sb5BhL','Gimnasio Titan|Cliente':'HEpEpwWdHPfAGumFbtxVf7'};
+function go(key){toast('Entrando a '+key.replace('|',' como ')+'…');window.open('https://claude.ai/artifact/'+U[key],'_blank')}
+function toast(t){var e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(function(){e.style.display='none'},2600)}
+var ok=function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)};
+function err(i,m,msg){$(i).classList.toggle('bad',!!msg);$(m).textContent=msg||''}
+$('#eye').addEventListener('click',function(){var p=$('#pw'),s=p.type==='password';p.type=s?'text':'password';this.textContent=s?'Ocultar':'Mostrar';this.setAttribute('aria-label',s?'Ocultar contraseña':'Mostrar contraseña')});
+$('#f-login').addEventListener('submit',function(e){e.preventDefault();
+ var a=$('#em').value.trim(),b=$('#pw').value,bad=false;
+ err('#em','#e-em',ok(a)?'':'Escribe un correo válido, por ejemplo nombre@correo.com.');
+ err('#pw','#e-pw',b.length>=1?'':'Escribe tu contraseña.');
+ if(!ok(a)||!b)return;
+ var btn=$('#b-login');btn.disabled=true;btn.textContent='Verificando…';
+ setTimeout(function(){btn.disabled=false;btn.textContent='Entrar';show('v-ctx')},700)});
+$('#f-forgot').addEventListener('submit',function(e){e.preventDefault();
+ var a=$('#em2').value.trim();err('#em2','#e-em2',ok(a)?'':'Escribe un correo válido, por ejemplo nombre@correo.com.');
+ if(ok(a))show('v-sent')});
+document.querySelectorAll('.ctx').forEach(function(c){c.addEventListener('click',function(){
+ document.querySelectorAll('.ctx').forEach(function(x){x.setAttribute('aria-checked','false')});
+ c.setAttribute('aria-checked','true');var key=c.dataset.n+'|'+c.dataset.r;if(key==='Libiter|Superadministrador'){show('v-mfa');return}go(key)})});
+$('#f-mfa').addEventListener('submit',function(e){e.preventDefault();var v=$('#cd').value.replace(/\D/g,'');if(v.length!==6){$('#cd').classList.add('bad');$('#e-cd').textContent='Escribe los 6 dígitos de tu app de verificación.';return}$('#cd').classList.remove('bad');$('#e-cd').textContent='';go('Libiter|Superadministrador')});
+$('#f-inv').addEventListener('submit',function(e){e.preventDefault();var a=$('#np').value,b=$('#np2').value;$('#e-np').textContent=a.length<8?'Usa al menos 8 caracteres.':'';$('#e-np2').textContent=(a.length>=8&&a!==b)?'Las contraseñas no coinciden.':'';if(a.length<8||a!==b)return;show('v-ctx')});
+var r=document.documentElement;$('#tgl').addEventListener('click',function(){
+ var dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+ r.dataset.theme=dark?'light':'dark'});
+})();
+</script>
+</body>
+</html>

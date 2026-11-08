@@ -1,0 +1,12 @@
+# Esqueleto. Los pasos reales se agregan en la Etapa 0 una vez elegidas las versiones.
+name: ci-infra
+on:
+  pull_request:
+    paths:
+      - 'infrastructure/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: instalar, compilar, probar

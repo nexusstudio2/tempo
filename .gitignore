@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+target/
+build/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.tfstate
+*.tfstate.*
+.terraform/
+.idea/
+.vscode/
+.DS_Store
+*.log
