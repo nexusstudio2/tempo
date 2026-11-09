@@ -1,14 +1,29 @@
-# Esqueleto. Los pasos reales se agregan en la Etapa 0 una vez elegidas las versiones.
-name: ci-api
+name: API CI
 on:
-  pull_request:
+  push:
+    branches: [main, Angel]
     paths:
-      - 'services/api/**'
-      - 'database/**'
-      - 'contracts/**'
+      - "services/api/**"
+      - "database/**"
+      - "contracts/**"
+      - ".github/workflows/ci-api.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "services/api/**"
+      - "database/**"
+      - "contracts/**"
+      - ".github/workflows/ci-api.yml"
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # TODO: instalar, compilar, probar
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: services/api/pom.xml
+      - name: Compilar y ejecutar pruebas
+        run: mvn --batch-mode --no-transfer-progress -f services/api/pom.xml verify

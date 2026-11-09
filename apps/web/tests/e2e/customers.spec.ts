@@ -11,7 +11,7 @@ async function enterAsOwner(page: Page) {
 
 test("el propietario registra un cliente y lo ve en la lista", async ({ page }) => {
   await enterAsOwner(page);
-  await page.getByRole("link", { name: "Clientes" }).click();
+  await page.getByRole("link", { name: "Clientes", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Clientes" })).toBeVisible();
 
   await page.getByRole("button", { name: "Nuevo cliente" }).click();
@@ -25,7 +25,7 @@ test("el propietario registra un cliente y lo ve en la lista", async ({ page }) 
 
 test("pide un correo si se quiere enviar la invitación", async ({ page }) => {
   await enterAsOwner(page);
-  await page.getByRole("link", { name: "Clientes" }).click();
+  await page.getByRole("link", { name: "Clientes", exact: true }).click();
   await page.getByRole("button", { name: "Nuevo cliente" }).click();
   await page.getByLabel("Nombre completo").fill("Sin Correo");
   await page.getByRole("button", { name: "Registrar cliente" }).click();
@@ -34,7 +34,7 @@ test("pide un correo si se quiere enviar la invitación", async ({ page }) => {
 
 test("la búsqueda filtra la lista", async ({ page }) => {
   await enterAsOwner(page);
-  await page.getByRole("link", { name: "Clientes" }).click();
+  await page.getByRole("link", { name: "Clientes", exact: true }).click();
   await page.getByLabel("Buscar cliente").fill("hector");
   await expect(page.getByRole("button", { name: /Héctor/ }).first()).toBeVisible();
   await expect(page.getByRole("button", { name: /Ana [A-Z]/ })).toHaveCount(0);

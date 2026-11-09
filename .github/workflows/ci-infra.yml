@@ -1,12 +1,24 @@
-# Esqueleto. Los pasos reales se agregan en la Etapa 0 una vez elegidas las versiones.
-name: ci-infra
+name: Infrastructure CI
 on:
-  pull_request:
+  push:
+    branches: [main, Angel]
     paths:
-      - 'infrastructure/**'
+      - "infrastructure/**"
+      - ".env.example"
+      - ".github/workflows/ci-infra.yml"
+      - ".env.example"
+      - ".github/workflows/ci-infra.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "infrastructure/**"
 jobs:
-  build:
+  validate-compose:
     runs-on: ubuntu-latest
+    env:
+      DB_PASSWORD: tempo-ci-only-db-password
+      DB_ROOT_PASSWORD: tempo-ci-only-root-password
     steps:
       - uses: actions/checkout@v4
-      # TODO: instalar, compilar, probar
+      - name: Validar configuración de Docker Compose
+        run: docker compose --env-file .env.example -f infrastructure/docker/docker-compose.local.yml config --quiet
