@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import com.koaliado.tempo.modules.customers.application.UpdateCustomerCommand;
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -55,5 +58,21 @@ public class CustomerController {
             @Valid @RequestBody CreateCustomerCommand command) {
         CustomerView created = service.create(access.resolve(jwt.getSubject(), tenant), command);
         return ResponseEntity.created(URI.create("/api/v1/customers/" + created.id())).body(created);
+    }
+
+    @PatchMapping("/{id}")
+    CustomerView update(@AuthenticationPrincipal Jwt jwt,
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenant,
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateCustomerCommand command) {
+        return service.update(access.resolve(jwt.getSubject(), tenant), id, command);
+    }
+
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> deactivate(@AuthenticationPrincipal Jwt jwt,
+                                    @RequestHeader(value = TENANT_HEADER, required = false) String tenant,
+                                    @PathVariable UUID id) {
+        service.deactivate(access.resolve(jwt.getSubject(), tenant), id);
+        return ResponseEntity.noContent().build();
     }
 }

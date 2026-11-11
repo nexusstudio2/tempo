@@ -5,6 +5,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 import java.util.UUID;
 
@@ -52,6 +56,10 @@ class CustomersApiIT {
     static final UUID TENANT_A = UUID.randomUUID();
     static final UUID TENANT_B = UUID.randomUUID();
     static final UUID CUSTOMER_B = UUID.randomUUID();
+    static final UUID CUST_PATCH = UUID.randomUUID();
+    static final UUID CUST_ISO = UUID.randomUUID();
+    static final UUID CUST_BAJA = UUID.randomUUID();
+    static final UUID CUST_MINOR = UUID.randomUUID();
 
     @BeforeAll
     static void seed(@Autowired JdbcTemplate jdbc) {
@@ -61,10 +69,26 @@ class CustomersApiIT {
         user(jdbc, "sub-b", "b@test.local", TENANT_B, "BUSINESS_ADMIN");
         user(jdbc, "sub-cust", "cust@test.local", TENANT_A, "CUSTOMER");
         user(jdbc, "sub-nomember", "none@test.local", null, null);
+        user(jdbc, "sub-recep", "recep@test.local", TENANT_A, "RECEPTIONIST");
+        user(jdbc, "sub-instr", "instr@test.local", TENANT_A, "INSTRUCTOR");
+        customerOfA(jdbc, CUST_PATCH, "Para Editar");
+        customerOfA(jdbc, CUST_ISO, "Aislado");
+        customerOfA(jdbc, CUST_BAJA, "Para Baja");
+        customerOfA(jdbc, CUST_MINOR, "Sin Fecha");
         jdbc.update("INSERT INTO customers (id, tenant_id, full_name) VALUES (?, ?, ?)",
                 bytes(UUID.randomUUID()), bytes(TENANT_A), "Cliente de A");
         jdbc.update("INSERT INTO customers (id, tenant_id, full_name) VALUES (?, ?, ?)",
                 bytes(CUSTOMER_B), bytes(TENANT_B), "Cliente de B");
+    }
+
+    private static void customerOfA(JdbcTemplate jdbc, UUID id, String name) {
+        jdbc.update("INSERT INTO customers (id, tenant_id, full_name) VALUES (?, ?, ?)",
+            bytes(id), bytes(TENANT_A), name);
+    }
+
+    private int auditCount(String action, UUID resourceId) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM audit_events WHERE action = ? AND resource_id = ?",
+            Integer.class, action, bytes(resourceId));
     }
 
     private static byte[] bytes(UUID id) {
@@ -164,5 +188,79 @@ class CustomersApiIT {
                 .header("X-Tenant-Id", TENANT_A.toString())
                 .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated());
+    }
+
+        @Test
+    void adminCanPatchCustomerAndAuditIsRecorded() throws Exception {
+        mvc.perform(patch("/api/v1/customers/" + CUST_PATCH).with(as("sub-a"))
+                .header("X-Tenant-Id", TENANT_A.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"fullName\":\"Nombre Editado\",\"phone\":\"6141112222\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.fullName").value("Nombre Editado"))
+            .andExpect(jsonPath("$.phone").value("6141112222"));
+        assertThat(auditCount("customer.update", CUST_PATCH)).isEqualTo(1);
+    }
+
+    @Test
+    void emptyPatchIsBadRequest() throws Exception {
+        mvc.perform(patch("/api/v1/customers/" + CUST_ISO).with(as("sub-a"))
+                .header("X-Tenant-Id", TENANT_A.toString())
+                .contentType(MediaType.APPLICATION_JSON).content("{}"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void otherTenantCannotPatchCustomer() throws Exception {
+        mvc.perform(patch("/api/v1/customers/" + CUST_ISO).with(as("sub-b"))
+                .header("X-Tenant-Id", TENANT_B.toString())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Hackeado\"}"))
+            .andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/customers/" + CUST_ISO).with(as("sub-a")).header("X-Tenant-Id", TENANT_A.toString()))
+            .andExpect(jsonPath("$.fullName").value("Aislado"));
+    }
+
+    @Test
+    void otherTenantCannotDeactivateCustomer() throws Exception {
+        mvc.perform(delete("/api/v1/customers/" + CUST_ISO).with(as("sub-b")).header("X-Tenant-Id", TENANT_B.toString()))
+            .andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/customers/" + CUST_ISO).with(as("sub-a")).header("X-Tenant-Id", TENANT_A.toString()))
+            .andExpect(jsonPath("$.status").value("ACTIVE"));
+    }
+
+    @Test
+    void instructorCannotPatch() throws Exception {
+        mvc.perform(patch("/api/v1/customers/" + CUST_ISO).with(as("sub-instr"))
+                .header("X-Tenant-Id", TENANT_A.toString())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"X\"}"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void receptionistCannotDeactivate() throws Exception {
+        mvc.perform(delete("/api/v1/customers/" + CUST_ISO).with(as("sub-recep")).header("X-Tenant-Id", TENANT_A.toString()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deactivateIsLogicalIdempotentAndAudited() throws Exception {
+        for (int i = 0; i < 2; i++) {
+            mvc.perform(delete("/api/v1/customers/" + CUST_BAJA).with(as("sub-a")).header("X-Tenant-Id", TENANT_A.toString()))
+                .andExpect(status().isNoContent());
+        }
+        mvc.perform(get("/api/v1/customers/" + CUST_BAJA).with(as("sub-a")).header("X-Tenant-Id", TENANT_A.toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("INACTIVE"));
+        assertThat(auditCount("customer.deactivate", CUST_BAJA)).isEqualTo(1);
+    }
+
+    @Test
+    void patchThatLeavesMinorWithoutGuardianIsRejectedAndRolledBack() throws Exception {
+        mvc.perform(patch("/api/v1/customers/" + CUST_MINOR).with(as("sub-a"))
+                .header("X-Tenant-Id", TENANT_A.toString())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"dateOfBirth\":\"2018-06-01\"}"))
+            .andExpect(status().isUnprocessableEntity());
+        mvc.perform(get("/api/v1/customers/" + CUST_MINOR).with(as("sub-a")).header("X-Tenant-Id", TENANT_A.toString()))
+            .andExpect(jsonPath("$.dateOfBirth").value(nullValue()));
     }
 }

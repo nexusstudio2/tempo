@@ -12,6 +12,7 @@ import com.koaliado.tempo.modules.customers.application.CustomerView;
 import com.koaliado.tempo.shared.tenancy.UuidBytes;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import com.koaliado.tempo.modules.customers.application.UpdateCustomerCommand;
 
 /**
  * Todas las consultas exigen tenantId: no existe ningun metodo sin filtro de
@@ -78,6 +79,44 @@ public class CustomerRepository {
                 .param("consent", Timestamp.from(g.consentGivenAt()))
                 .param("by", UuidBytes.toBytes(recordedBy))
                 .update();
+    }
+
+        public void update(UUID tenantId, UUID id, UpdateCustomerCommand c) {
+        jdbc.sql("UPDATE customers SET full_name = COALESCE(:name, full_name), email = COALESCE(:email, email), "
+                + "phone = COALESCE(:phone, phone), date_of_birth = COALESCE(:dob, date_of_birth), "
+                + "branch_id = COALESCE(:branch, branch_id), "
+                + "emergency_contact_name = COALESCE(:ecn, emergency_contact_name), "
+                + "emergency_contact_phone = COALESCE(:ecp, emergency_contact_phone), "
+                + "emergency_contact_relationship = COALESCE(:ecr, emergency_contact_relationship), "
+                + "notes = COALESCE(:notes, notes) WHERE tenant_id = :t AND id = :id")
+            .param("t", UuidBytes.toBytes(tenantId))
+            .param("id", UuidBytes.toBytes(id))
+            .param("name", blankToNull(c.fullName()))
+            .param("email", blankToNull(c.email()))
+            .param("phone", blankToNull(c.phone()))
+            .param("dob", c.dateOfBirth())
+            .param("branch", c.branchId() == null ? null : UuidBytes.toBytes(c.branchId()))
+            .param("ecn", blankToNull(c.emergencyContactName()))
+            .param("ecp", blankToNull(c.emergencyContactPhone()))
+            .param("ecr", blankToNull(c.emergencyContactRelationship()))
+            .param("notes", blankToNull(c.notes()))
+            .update();
+    }
+
+    public void deactivate(UUID tenantId, UUID id) {
+        jdbc.sql("UPDATE customers SET status = 'INACTIVE' WHERE tenant_id = :t AND id = :id")
+            .param("t", UuidBytes.toBytes(tenantId))
+            .param("id", UuidBytes.toBytes(id))
+            .update();
+    }
+
+    public int activeGuardianCount(UUID tenantId, UUID customerId) {
+        return jdbc.sql("SELECT COUNT(*) FROM customer_guardians "
+                + "WHERE tenant_id = :t AND customer_id = :c AND status = 'ACTIVE'")
+            .param("t", UuidBytes.toBytes(tenantId))
+            .param("c", UuidBytes.toBytes(customerId))
+            .query(Integer.class)
+            .single();
     }
 
     private static String blankToNull(String s) {
