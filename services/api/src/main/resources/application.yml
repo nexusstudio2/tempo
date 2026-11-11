@@ -33,6 +33,9 @@ management:
 tempo:
   security:
     cognito-issuer: ${COGNITO_ISSUER_URI:}
+    jwk-set-uri: ${OIDC_JWK_SET_URI:}
+    client-id-claim: ${OIDC_CLIENT_ID_CLAIM:client_id}
+    required-token-use: ${OIDC_REQUIRED_TOKEN_USE:access}
 
 logging:
   level:

@@ -31,6 +31,9 @@ public class SecurityConfiguration {
     SecurityFilterChain apiSecurity(HttpSecurity http,
             @Value("${tempo.security.cognito-issuer:}") String issuer,
             @Value("${COGNITO_CLIENT_ID:}") String clientId,
+            @Value("${tempo.security.jwk-set-uri:}") String jwkSetUri,
+            @Value("${tempo.security.client-id-claim:client_id}") String clientIdClaim,
+            @Value("${tempo.security.required-token-use:access}") String requiredTokenUse,
             ObjectProvider<JwtDecoder> decoderProvider,
             ApiAuthenticationEntryPoint authenticationEntryPoint,
             ApiAccessDeniedHandler accessDeniedHandler) throws Exception {
@@ -53,7 +56,7 @@ public class SecurityConfiguration {
 
         if (issuer != null && !issuer.isBlank() && clientId != null && !clientId.isBlank()) {
             http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                    .decoder(cognitoJwtDecoder(issuer, clientId))
+                    .decoder(cognitoJwtDecoder(issuer, clientId, jwkSetUri, clientIdClaim, requiredTokenUse))
                     .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                     .authenticationEntryPoint(authenticationEntryPoint)
                     .accessDeniedHandler(accessDeniedHandler));
@@ -61,19 +64,15 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    private JwtDecoder cognitoJwtDecoder(String issuer, String clientId) {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder
-                .withJwkSetUri(issuer.replaceAll("/+$", "") + "/.well-known/jwks.json").build();
-        OAuth2TokenValidator<Jwt> cognitoClaims = jwt -> {
-            boolean isAccessToken = "access".equals(jwt.getClaimAsString("token_use"));
-            boolean isExpectedClient = clientId.equals(jwt.getClaimAsString("client_id"));
-            return isAccessToken && isExpectedClient
-                    ? OAuth2TokenValidatorResult.success()
-                    : OAuth2TokenValidatorResult
-                            .failure(new OAuth2Error("invalid_token", "Invalid Cognito access token.", null));
-        };
+    private JwtDecoder cognitoJwtDecoder(String issuer, String clientId, String jwkSetUri,
+            String clientIdClaim, String requiredTokenUse) {
+        String uri = (jwkSetUri == null || jwkSetUri.isBlank())
+                ? issuer.replaceAll("/+$", "") + "/.well-known/jwks.json"
+                : jwkSetUri;
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(uri).build();
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                JwtValidators.createDefaultWithIssuer(issuer), cognitoClaims));
+                JwtValidators.createDefaultWithIssuer(issuer),
+                new AccessTokenClaimsValidator(clientId, clientIdClaim, requiredTokenUse)));
         return decoder;
     }
 
