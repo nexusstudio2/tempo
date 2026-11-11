@@ -71,7 +71,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
   const apiOrigin = process.env.API_PROXY_TARGET ?? "http://localhost:8080";
   const target = new URL(`/api/v1/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`, apiOrigin);
   const headers = new Headers();
-  for (const name of ["accept", "content-type", "idempotency-key", "x-correlation-id"]) {
+  for (const name of ["accept", "content-type", "idempotency-key", "x-correlation-id", "x-context-id"]) {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }

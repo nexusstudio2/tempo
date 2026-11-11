@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -47,5 +48,20 @@ public class ApiExceptionHandler {
     private String correlationId(HttpServletRequest request) {
         Object requestId = request.getAttribute("tempo.correlationId");
         return requestId instanceof String value ? value : UUID.randomUUID().toString();
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    ResponseEntity<ApiErrorResponse> status(ResponseStatusException exception, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.valueOf(exception.getStatusCode().value());
+        String code = switch (status) {
+            case BAD_REQUEST -> "bad_request";
+            case FORBIDDEN -> "forbidden";
+            case NOT_FOUND -> "not_found";
+            case CONFLICT -> "conflict";
+            case UNPROCESSABLE_ENTITY -> "unprocessable_entity";
+            default -> "error";
+        };
+        String message = exception.getReason() != null ? exception.getReason() : status.getReasonPhrase();
+        return response(status, code, message, List.of(), request);
     }
 }
