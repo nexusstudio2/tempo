@@ -27,7 +27,7 @@ import com.koaliado.tempo.modules.customers.application.UpdateCustomerCommand;
 @RestController
 @RequestMapping("/api/v1/customers")
 public class CustomerController {
-    private static final String TENANT_HEADER = "X-Tenant-Id";
+    private static final String TENANT_HEADER = "X-Context-Id";
 
     private final TenantAccessService access;
     private final CustomerService service;
@@ -70,8 +70,8 @@ public class CustomerController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<Void> deactivate(@AuthenticationPrincipal Jwt jwt,
-                                    @RequestHeader(value = TENANT_HEADER, required = false) String tenant,
-                                    @PathVariable UUID id) {
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenant,
+            @PathVariable UUID id) {
         service.deactivate(access.resolve(jwt.getSubject(), tenant), id);
         return ResponseEntity.noContent().build();
     }
