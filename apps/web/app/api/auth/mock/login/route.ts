@@ -3,8 +3,34 @@ import { contextsForMockUser, findMockUser, MOCK_SESSION_COOKIE, mockSessionCook
 
 export const runtime = "nodejs";
 
+function hasAllowedOrigin(request: NextRequest): boolean {
+  const originHeader = request.headers.get("origin");
+  if (!originHeader) return true;
+
+  try {
+    const origin = new URL(originHeader);
+    if (origin.origin === new URL(request.url).origin) return true;
+
+    // A reverse proxy can terminate HTTPS and forward the request to Next over HTTP.
+    // In that case, validate against the public origin forwarded by the proxy.
+    const forwardedHost = (
+      request.headers.get("x-forwarded-host") ?? request.headers.get("host")
+    )?.split(",")[0]?.trim();
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    return Boolean(
+      forwardedHost &&
+      forwardedProto &&
+      (forwardedProto === "http" || forwardedProto === "https") &&
+      origin.host === forwardedHost &&
+      origin.protocol === `${forwardedProto}:`,
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
-  if (request.headers.get("origin") && request.headers.get("origin") !== new URL(request.url).origin) {
+  if (!hasAllowedOrigin(request)) {
     return NextResponse.json({ message: "Origen no permitido." }, { status: 403 });
   }
   try {

@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Quick Tunnels use a new hostname each time; allow their dev assets so the
+  // client-side login can hydrate when the app is shared through Cloudflare.
+  allowedDevOrigins: ["*.trycloudflare.com"],
   async headers() {
     return [
       {
